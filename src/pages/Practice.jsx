@@ -70,7 +70,7 @@ export default function Practice({ sheet, firebase, existingDocId, onFinish, onB
     const timeTaken = qTimes.reduce((a, b) => a + b, 0);
     const result = { correct, incorrect, skipped, marks, total, details, timeTaken, totalQ, mode: 'practice' };
 
-    if (firebase?.user) {
+    if (firebase?.effectiveUid) {
       setSaving(true);
       const isReattempt = !!(await firebase.getLastCompletedAttempt(sheet.id));
       result.isReattempt = isReattempt;
