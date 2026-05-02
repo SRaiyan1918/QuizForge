@@ -55,7 +55,7 @@ export default function Quiz({ sheet, firebase, existingDocId, onFinish, onBack 
     const pausedState = { answers, timeLeft, flagged };
     const partialResult = buildResult(answers, Math.floor((Date.now() - startTimeRef.current) / 1000));
 
-    if (firebase?.user) {
+    if (firebase?.effectiveUid) {
       if (docId) {
         await firebase.updateAttempt(docId, sheet, partialResult, pausedState);
       } else {
@@ -76,7 +76,7 @@ export default function Quiz({ sheet, firebase, existingDocId, onFinish, onBack 
     const timeTaken = Math.floor((Date.now() - startTimeRef.current) / 1000);
     const result = buildResult(answers, timeTaken, autoSubmit);
 
-    if (firebase?.user) {
+    if (firebase?.effectiveUid) {
       setSaving(true);
       const isReattempt = !!(await firebase.getLastCompletedAttempt(sheet.id));
       const reattemptOf = isReattempt
@@ -220,7 +220,7 @@ export default function Quiz({ sheet, firebase, existingDocId, onFinish, onBack 
           <div className="modal-card" onClick={e => e.stopPropagation()}>
             <h3>⏸ Pause attempt?</h3>
             <p className="modal-note">
-              {firebase?.user
+              {firebase?.effectiveUid
                 ? 'Aapka progress Firebase mein save ho jayega. Baad mein resume kar sakte ho.'
                 : 'App band karne ke baad data kho sakta hai. Sign in karo reliable save ke liye.'}
             </p>
@@ -246,7 +246,7 @@ export default function Quiz({ sheet, firebase, existingDocId, onFinish, onBack 
               <div className="modal-stat"><span className="ms-val" style={{color:'var(--text3)'}}>{totalQ - attempted}</span><span className="ms-label">Skipped</span></div>
               <div className="modal-stat"><span className="ms-val" style={{color:'var(--yellow)'}}>{flagged.filter(Boolean).length}</span><span className="ms-label">Flagged</span></div>
             </div>
-            {firebase?.user
+            {firebase?.effectiveUid
               ? <p className="modal-note">✅ Data Class Tracker mein save ho jayega.</p>
               : <p className="modal-note" style={{color:'var(--yellow)'}}>⚠️ Sign in nahi hai — data save nahi hoga.</p>
             }
