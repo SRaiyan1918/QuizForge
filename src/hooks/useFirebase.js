@@ -1,29 +1,10 @@
 /**
  * useFirebase — QuizForge ka Firebase bridge
  *
- * Firestore collection: 'practices'
- * Document shape (same as Class Tracker expects):
- * {
- *   uid,
- *   sheetId,          // e.g. "KPP_01"
- *   sheetName,        // e.g. "KPP 01 : Electrostatics"
- *   chapter,          // e.g. "Electrostatics"
- *   subject,
- *   date,             // "YYYY-MM-DD"
- *   totalQns,
- *   correct,
- *   wrong,
- *   touched,
- *   skipped,
- *   accuracy,
- *   timeTaken,        // seconds
- *   mode,             // "quiz" | "practice"
- *   status,           // "paused" | "completed"
- *   isReattempt,      // boolean
- *   reattemptOf,      // docId of original, or null
- *   pausedState,      // { answers, timeLeft, flagged, qTimes } — only when paused
- *   timestamp,
- * }
+ * Agar URL mein ?uid=xyz aaya (Class Tracker se) to woh uid use hoga
+ * bina sign in ke. User ko sign in screen nahi dikhegi.
+ *
+ * Agar directly QuizForge khola to Google sign in optional hai.
  */
 
 import { useState, useEffect } from 'react';
@@ -38,6 +19,9 @@ export function useFirebase() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
+  // UID passed from Class Tracker via URL param
+  const urlUid = new URLSearchParams(window.location.search).get('uid');
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, u => {
       setUser(u);
@@ -49,13 +33,17 @@ export function useFirebase() {
   const signIn = () => signInWithPopup(auth, provider);
   const signOut = () => auth.signOut();
 
+  // Effective UID — URL param uid takes priority (Class Tracker user)
+  // Falls back to signed-in user's uid
+  const effectiveUid = urlUid || user?.uid || null;
+
   /**
    * Save a NEW attempt (paused or completed)
    * Returns the new Firestore doc ID
    */
   async function saveAttempt(sheet, result, pausedState = null) {
-    if (!user) return null;
-    const data = buildDoc(sheet, result, pausedState, user.uid);
+    if (!effectiveUid) return null;
+    const data = buildDoc(sheet, result, pausedState, effectiveUid);
     try {
       const ref = await addDoc(collection(db, 'practices'), data);
       return ref.id;
@@ -66,11 +54,11 @@ export function useFirebase() {
   }
 
   /**
-   * Update an existing attempt (e.g. pause→resume→complete, or reattempt edit)
+   * Update an existing attempt
    */
   async function updateAttempt(docId, sheet, result, pausedState = null) {
-    if (!user || !docId) return;
-    const data = buildDoc(sheet, result, pausedState, user.uid);
+    if (!effectiveUid || !docId) return;
+    const data = buildDoc(sheet, result, pausedState, effectiveUid);
     try {
       await updateDoc(doc(db, 'practices', docId), data);
     } catch (e) {
@@ -79,15 +67,14 @@ export function useFirebase() {
   }
 
   /**
-   * Load paused attempt for a given sheet (latest one)
-   * Returns { docId, pausedState } or null
+   * Load paused attempt for a given sheet
    */
   async function loadPausedAttempt(sheetId) {
-    if (!user) return null;
+    if (!effectiveUid) return null;
     try {
       const q = query(
         collection(db, 'practices'),
-        where('uid', '==', user.uid),
+        where('uid', '==', effectiveUid),
         where('sheetId', '==', sheetId),
         where('status', '==', 'paused'),
         orderBy('timestamp', 'desc')
@@ -103,15 +90,14 @@ export function useFirebase() {
   }
 
   /**
-   * Check if this sheet has been attempted before (for reattempt flag)
-   * Returns the last completed docId or null
+   * Get last completed attempt docId for reattempt flag
    */
   async function getLastCompletedAttempt(sheetId) {
-    if (!user) return null;
+    if (!effectiveUid) return null;
     try {
       const q = query(
         collection(db, 'practices'),
-        where('uid', '==', user.uid),
+        where('uid', '==', effectiveUid),
         where('sheetId', '==', sheetId),
         where('status', '==', 'completed'),
         orderBy('timestamp', 'desc')
@@ -127,6 +113,8 @@ export function useFirebase() {
   return {
     user,
     authLoading,
+    effectiveUid,      // use this to check if saving is possible
+    isFromClassTracker: !!urlUid,
     signIn,
     signOut,
     saveAttempt,
