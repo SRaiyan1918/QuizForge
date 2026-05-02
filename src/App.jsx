@@ -15,7 +15,7 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [currentDocId, setCurrentDocId] = useState(null);
 
-  // URL Params: ?sheetId=KPP_01 (from Class Tracker "Attempt" button)
+  // URL Params: ?sheetId=KPP_01&uid=xyz (from Class Tracker)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sheetId = params.get('sheetId');
@@ -24,7 +24,11 @@ export default function App() {
       if (sheet) {
         setSelectedSheet(sheet);
         setPage('modeSelect');
-        window.history.replaceState({}, '', window.location.pathname);
+        // Keep uid in URL but remove sheetId
+        const newParams = new URLSearchParams(window.location.search);
+        newParams.delete('sheetId');
+        const newSearch = newParams.toString();
+        window.history.replaceState({}, '', newSearch ? `?${newSearch}` : window.location.pathname);
       }
     }
   }, []);
@@ -36,18 +40,28 @@ export default function App() {
     if (data.docId !== undefined) setCurrentDocId(data.docId);
   };
 
+  // Agar Class Tracker se aaya hai (uid URL mein hai) to auth UI nahi dikhana
+  const showAuthUI = !firebase.isFromClassTracker;
+
   return (
     <div className="app-root">
-      {!firebase.authLoading && !firebase.user && page !== 'home' && (
+      {/* Auth banner — sirf tab jab directly QuizForge khola ho */}
+      {showAuthUI && !firebase.authLoading && !firebase.user && page !== 'home' && (
         <div className="auth-banner">
-          <span>🔒 Sign in to save attempts to Class Tracker</span>
+          <span>🔒 Sign in to save attempts</span>
           <button className="btn btn-primary btn-sm" onClick={firebase.signIn}>
             Sign in with Google
           </button>
         </div>
       )}
 
-      {firebase.user && (
+      {/* Signed in indicator — Class Tracker se aaya ho to "Linked" dikhao */}
+      {firebase.isFromClassTracker && (
+        <div className="auth-topbar linked">
+          <span>🔗 Class Tracker se linked — data automatically save hoga</span>
+        </div>
+      )}
+      {!firebase.isFromClassTracker && firebase.user && (
         <div className="auth-topbar">
           <span className="auth-user-name">👤 {firebase.user.displayName?.split(' ')[0]}</span>
           <button className="auth-signout" onClick={firebase.signOut}>Sign out</button>
