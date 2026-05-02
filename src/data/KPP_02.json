@@ -1,0 +1,46 @@
+{
+  "id": "KPP_02",
+  "title": "Matrices : DPP 01",
+  "chapter": "Matrices",
+  "subject": "Mathematics",
+  "totalTime": 900,
+  "marksPerQuestion": 4,
+  "questions": [
+    "A matrix having equal number of rows and columns is called:",
+    "The transpose of matrix A is denoted by:",
+    "If A = [aᵢⱼ] is a square matrix where aᵢⱼ = aⱼᵢ for all i, j, then A is:",
+    "Order of matrix AB where A is 2×3 and B is 3×4:",
+    "If A is a matrix of order m×n, then order of Aᵀ is:",
+    "A matrix in which all non-diagonal elements are zero is called:",
+    "If A² = A, then matrix A is called:",
+    "The additive inverse of matrix A is:",
+    "For a null matrix O, A + O equals:",
+    "A square matrix A is invertible if and only if:"
+  ],
+  "options": [
+    ["Row matrix", "Column matrix", "Square matrix", "Rectangular matrix"],
+    ["A'", "Aᵀ", "Both A and B", "None"],
+    ["Skew-symmetric", "Symmetric", "Identity", "Diagonal"],
+    ["2×4", "3×3", "2×3", "3×4"],
+    ["n×m", "m×n", "n×n", "m×m"],
+    ["Identity matrix", "Zero matrix", "Diagonal matrix", "Unit matrix"],
+    ["Involuntary matrix", "Idempotent matrix", "Nilpotent matrix", "Orthogonal matrix"],
+    ["-A", "A", "0", "Aᵀ"],
+    ["O", "A", "2A", "-A"],
+    ["|A| ≠ 0", "|A| = 0", "|A| = 1", "|A| < 0"]
+  ],
+  "answers": [2, 2, 1, 0, 0, 2, 1, 0, 1, 0],
+  "explanations": [
+    "A square matrix has equal number of rows and columns (m = n).",
+    "Transpose is denoted by both Aᵀ and A', so both A and B are correct.",
+    "When aᵢⱼ = aⱼᵢ for all i,j, matrix is symmetric.",
+    "A(2×3) × B(3×4) = AB(2×4). Inner dimensions must match.",
+    "Transpose swaps rows and columns: m×n becomes n×m.",
+    "A diagonal matrix has zeros everywhere except the main diagonal.",
+    "If A² = A, matrix is called idempotent.",
+    "Additive inverse of A is -A, since A + (-A) = O.",
+    "A + O = A for any matrix A (O is additive identity).",
+    "A square matrix is invertible (non-singular) if and only if |A| ≠ 0."
+  ],
+  "imagePaths": [null, null, null, null, null, null, null, null, null, null]
+}

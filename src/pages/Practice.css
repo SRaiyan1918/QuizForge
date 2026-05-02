@@ -1,0 +1,312 @@
+.practice-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+/* Header */
+.practice-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+}
+
+.prac-sheet-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prac-sheet-id {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent2);
+  white-space: nowrap;
+}
+
+.prac-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--surface3);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.prac-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+.prac-q-count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text3);
+  white-space: nowrap;
+}
+
+/* Body */
+.practice-body {
+  display: flex;
+  flex: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 24px 20px;
+  gap: 20px;
+}
+
+/* Side Nav */
+.prac-side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+  flex-shrink: 0;
+}
+
+.prac-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.prac-dot:hover { border-color: var(--accent); }
+.prac-dot-current { border-color: var(--accent2); background: var(--accent2); box-shadow: 0 0 0 3px var(--accent-glow); }
+.prac-dot-correct { background: var(--green); border-color: var(--green); }
+.prac-dot-wrong { background: var(--red); border-color: var(--red); }
+
+/* Main */
+.prac-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.prac-q-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.prac-q-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.prac-timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 5px 12px;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.prac-timer-val {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--accent2);
+}
+
+/* Reuse q-text, options from Quiz.css */
+.q-text {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.q-image {
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+  display: block;
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.option-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  position: relative;
+}
+
+.option-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--surface2);
+}
+
+.option-btn.selected {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+
+.option-btn.correct {
+  border-color: var(--green) !important;
+  background: var(--green-bg) !important;
+  color: var(--green);
+}
+
+.option-btn.wrong {
+  border-color: var(--red) !important;
+  background: var(--red-bg) !important;
+  color: var(--red);
+}
+
+.option-btn.dimmed {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.option-btn:disabled { cursor: not-allowed; }
+
+.opt-label {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  transition: all 0.18s;
+}
+
+.option-btn.selected .opt-label {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.option-btn.correct .opt-label {
+  background: var(--green);
+  border-color: var(--green);
+  color: #000;
+}
+
+.option-btn.wrong .opt-label {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+.opt-text { flex: 1; }
+
+.opt-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+
+.correct-badge { background: var(--green-bg); color: var(--green); }
+.wrong-badge { background: var(--red-bg); color: var(--red); }
+
+/* Result Banner */
+.result-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  border: 1px solid;
+}
+
+.banner-correct { background: var(--green-bg); border-color: rgba(74,222,128,0.3); }
+.banner-wrong { background: var(--red-bg); border-color: rgba(248,113,113,0.3); }
+
+.banner-icon { font-size: 20px; }
+.banner-text { flex: 1; font-size: 14px; font-weight: 500; }
+
+.explanation-toggle {
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: inherit;
+  font-family: var(--font-body);
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+.explanation-toggle:hover { opacity: 1; }
+
+/* Explanation */
+.explanation-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text2);
+}
+
+.exp-header {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent2);
+  margin-bottom: 8px;
+}
+
+/* Actions */
+.prac-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 600px) {
+  .practice-body { padding: 16px; gap: 12px; }
+  .prac-side-nav { display: none; }
+}
