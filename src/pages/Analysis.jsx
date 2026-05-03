@@ -2,7 +2,7 @@ import { useState } from 'react';
 import './Analysis.css';
 import MathText from '../components/MathText';
 
-export default function Analysis({ result, sheet, onHome, onRetry }) {
+export default function Analysis({ result, sheet, onHome, onRetry, isPastAttempt = false }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [reviewFilter, setReviewFilter] = useState('all');
 
@@ -46,6 +46,11 @@ export default function Analysis({ result, sheet, onHome, onRetry }) {
               <span className={`tag ${mode === 'quiz' ? 'tag-accent' : 'tag-green'}`}>
                 {mode === 'quiz' ? '⏱ Quiz Mode' : '📖 Practice Mode'}
               </span>
+              {isPastAttempt && (
+                <span className="tag" style={{ background: 'rgba(251,191,36,0.15)', color: 'var(--yellow)', marginLeft: '6px' }}>
+                  📅 Past Attempt {result.date ? `• ${result.date}` : ''}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -225,7 +230,9 @@ export default function Analysis({ result, sheet, onHome, onRetry }) {
       {/* Action Buttons */}
       <div className="analysis-actions fade-up">
         <button className="btn btn-ghost" onClick={onHome}>🏠 Home</button>
-        <button className="btn btn-primary" onClick={onRetry}>↺ Reattempt</button>
+        {!isPastAttempt && (
+          <button className="btn btn-primary" onClick={onRetry}>↺ Reattempt</button>
+        )}
       </div>
     </div>
   );
