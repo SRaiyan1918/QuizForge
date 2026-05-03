@@ -45,19 +45,19 @@
   ],
   "imagePaths": [
     null,
-    "KPP_01_q2.png",
+    "/qns_fig/KPP_01_q2.png",
     null,
     null,
-    "KPP_01_q5.png",
+    "/qns_fig/KPP_01_q5.png",
+    "/qns_fig/KPP_01_q6.png",
+    null,
+    null,
+    "/qns_fig/KPP_01_q9.png",
     null,
     null,
     null,
-    "KPP_01_q9.png",
-    null,
-    null,
-    null,
-    "KPP_01_q13.png",
-    "KPP_01_q14.png",
-    null
+    "/qns_fig/KPP_01_q13.png",
+    "/qns_fig/KPP_01_q14.png",
+    "/qns_fig/KPP_01_q15.png"
   ]
 }
