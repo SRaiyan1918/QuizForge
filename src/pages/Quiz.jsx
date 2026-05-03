@@ -55,16 +55,11 @@ export default function Quiz({ sheet, firebase, existingDocId, onFinish, onBack 
     const pausedState = { answers, timeLeft, flagged };
     const partialResult = buildResult(answers, Math.floor((Date.now() - startTimeRef.current) / 1000));
 
-    if (firebase?.effectiveUid) {
-      if (docId) {
-        await firebase.updateAttempt(docId, sheet, partialResult, pausedState);
-      } else {
-        const newDocId = await firebase.saveAttempt(sheet, partialResult, pausedState);
-        setDocId(newDocId);
-      }
+    if (docId) {
+      await firebase.updateAttempt(docId, sheet, partialResult, pausedState);
     } else {
-      // Save to localStorage if not signed in (best effort)
-      localStorage.setItem(`pause_${sheet.id}`, JSON.stringify(pausedState));
+      const newDocId = await firebase.saveAttempt(sheet, partialResult, pausedState);
+      setDocId(newDocId);
     }
     setSaving(false);
     onBack();
@@ -76,27 +71,20 @@ export default function Quiz({ sheet, firebase, existingDocId, onFinish, onBack 
     const timeTaken = Math.floor((Date.now() - startTimeRef.current) / 1000);
     const result = buildResult(answers, timeTaken, autoSubmit);
 
-    if (firebase?.effectiveUid) {
-      setSaving(true);
-      const isReattempt = !!(await firebase.getLastCompletedAttempt(sheet.id));
-      const reattemptOf = isReattempt
-        ? await firebase.getLastCompletedAttempt(sheet.id)
-        : null;
-      result.isReattempt = isReattempt;
-      result.reattemptOf = reattemptOf;
+    setSaving(true);
+    const isReattempt = !!(await firebase.getLastCompletedAttempt(sheet.id));
+    result.isReattempt = isReattempt;
+    result.reattemptOf = isReattempt ? await firebase.getLastCompletedAttempt(sheet.id) : null;
 
-      let savedDocId;
-      if (docId) {
-        await firebase.updateAttempt(docId, sheet, result, null);
-        savedDocId = docId;
-      } else {
-        savedDocId = await firebase.saveAttempt(sheet, result, null);
-      }
-      setSaving(false);
-      onFinish(result, savedDocId);
+    let savedDocId;
+    if (docId) {
+      await firebase.updateAttempt(docId, sheet, result, null);
+      savedDocId = docId;
     } else {
-      onFinish(result, null);
+      savedDocId = await firebase.saveAttempt(sheet, result, null);
     }
+    setSaving(false);
+    onFinish(result, savedDocId);
   };
 
   const buildResult = (ans, timeTaken, autoSubmit = false) => {
