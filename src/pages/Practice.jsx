@@ -70,22 +70,19 @@ export default function Practice({ sheet, firebase, existingDocId, onFinish, onB
     const timeTaken = qTimes.reduce((a, b) => a + b, 0);
     const result = { correct, incorrect, skipped, marks, total, details, timeTaken, totalQ, mode: 'practice' };
 
-    if (firebase?.effectiveUid) {
-      setSaving(true);
-      const isReattempt = !!(await firebase.getLastCompletedAttempt(sheet.id));
-      result.isReattempt = isReattempt;
-      let savedDocId;
-      if (docId) {
-        await firebase.updateAttempt(docId, sheet, result, null);
-        savedDocId = docId;
-      } else {
-        savedDocId = await firebase.saveAttempt(sheet, result, null);
-      }
-      setSaving(false);
-      onFinish(result, savedDocId);
+    setSaving(true);
+    const isReattempt = !!(await firebase.getLastCompletedAttempt(sheet.id));
+    result.isReattempt = isReattempt;
+
+    let savedDocId;
+    if (docId) {
+      await firebase.updateAttempt(docId, sheet, result, null);
+      savedDocId = docId;
     } else {
-      onFinish(result, null);
+      savedDocId = await firebase.saveAttempt(sheet, result, null);
     }
+    setSaving(false);
+    onFinish(result, savedDocId);
   };
 
   const formatTime = (s) => {
