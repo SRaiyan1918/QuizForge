@@ -88,7 +88,7 @@
     "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
   ],
   "imagePaths": [
-    "KPP_02_q1.png",
+    "/qns_fig/KPP_02_q1.png",
     null,
     null,
     null,
@@ -105,7 +105,7 @@
     null,
     null,
     null,
-    "KPP_02_q18.png",
+    "/qns_fig/KPP_02_q18.png",
     null,
     null,
     null
