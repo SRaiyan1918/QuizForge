@@ -113,13 +113,13 @@ export default function Analysis({ result, sheet, onHome, onRetry }) {
 
       {/* Tabs */}
       <div className="analysis-tabs fade-up" style={{ animationDelay: '0.2s' }}>
-        {['overview', 'review'].map(tab => (
+        {['overview', 'review', 'flagged'].map(tab => (
           <button
             key={tab}
             className={`atab ${activeTab === tab ? 'atab-active' : ''}`}
             onClick={() => setActiveTab(tab)}
           >
-            {tab === 'overview' ? '📊 Overview' : '📝 Review Questions'}
+            {tab === 'overview' ? '📊 Overview' : tab === 'review' ? '📝 Review' : '🚩 Flagged'}
           </button>
         ))}
       </div>
@@ -192,6 +192,32 @@ export default function Analysis({ result, sheet, onHome, onRetry }) {
                 <ReviewCard key={i} d={d} sheet={sheet} />
               ))}
             </div>
+          </div>
+        )}
+
+        {activeTab === 'flagged' && (
+          <div className="review-tab">
+            {result.flagged && result.flagged.filter(Boolean).length > 0 ? (
+              <>
+                <p style={{ fontSize: '13px', color: 'var(--text3)', marginBottom: '16px' }}>
+                  🚩 {result.flagged.filter(Boolean).length} questions flagged — ye woh questions hain jo tumne bookmark kiye the
+                </p>
+                <div className="review-list">
+                  {result.flagged.map((f, i) => f ? (
+                    <ReviewCard
+                      key={i}
+                      d={details.find(d => d.q === i) || { q: i, selected: null, correct: sheet.answers[i], status: 'skipped' }}
+                      sheet={sheet}
+                    />
+                  ) : null)}
+                </div>
+              </>
+            ) : (
+              <div className="empty-state">
+                <div className="empty-icon">🚩</div>
+                <p>Koi flagged question nahi — Quiz mein ⚑ Flag button se questions bookmark karo</p>
+              </div>
+            )}
           </div>
         )}
       </div>
