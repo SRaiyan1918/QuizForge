@@ -6,18 +6,28 @@ import {
 import { onAuthStateChanged, signInWithPopup } from 'firebase/auth';
 import { db, auth, provider } from '../firebase';
 
+// Read uid from URL ONCE at module load time — before any React renders
+// This is the safest way — URL is read before App.jsx can modify it
+const INITIAL_URL_UID = new URLSearchParams(window.location.search).get('uid');
+
+console.log('[QuizForge] Initial URL uid:', INITIAL_URL_UID);
+
 export function useFirebase() {
-  const [user, setUser] = useState(null);
+  const [user, setUser]             = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  // Read uid ONCE from URL and store in ref so it never gets lost
-  const urlUidRef = useRef(new URLSearchParams(window.location.search).get('uid'));
-  const urlUid = urlUidRef.current;
+  // Keep uid in a ref so it's always accessible in async functions
+  const uidRef = useRef(INITIAL_URL_UID);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, u => {
       setUser(u);
       setAuthLoading(false);
+      // If no URL uid, use signed-in user uid
+      if (!uidRef.current && u?.uid) {
+        uidRef.current = u.uid;
+        console.log('[QuizForge] Auth uid set:', u.uid);
+      }
     });
     return unsub;
   }, []);
@@ -25,41 +35,44 @@ export function useFirebase() {
   const signIn  = () => signInWithPopup(auth, provider);
   const signOut = () => auth.signOut();
 
-  // urlUid (Class Tracker se) > signed-in user uid
-  const effectiveUid = urlUid || user?.uid || null;
+  // Helper — always gets latest uid
+  const getUid = () => uidRef.current || user?.uid || null;
 
   // ── Save new attempt ────────────────────────────────────────────────────
   async function saveAttempt(sheet, result, pausedState = null) {
-    const uid = urlUidRef.current || user?.uid;   // re-read from ref
-    console.log('[QuizForge] saveAttempt uid=', uid, 'result=', result.correct);
-    if (!uid) { console.warn('[QuizForge] No uid — not saving'); return null; }
+    const uid = getUid();
+    console.log('[QuizForge] saveAttempt called — uid:', uid, '| correct:', result.correct, '| status:', pausedState ? 'paused' : 'completed');
+    if (!uid) {
+      console.error('[QuizForge] saveAttempt FAILED — no uid!');
+      return null;
+    }
     const data = buildDoc(sheet, result, pausedState, uid);
     try {
       const ref = await addDoc(collection(db, 'practices'), data);
-      console.log('[QuizForge] Saved doc:', ref.id);
+      console.log('[QuizForge] ✅ Saved to Firestore — docId:', ref.id);
       return ref.id;
     } catch (e) {
-      console.error('[QuizForge] saveAttempt error:', e);
+      console.error('[QuizForge] ❌ Firestore save error:', e.code, e.message);
       return null;
     }
   }
 
   // ── Update existing attempt ─────────────────────────────────────────────
   async function updateAttempt(docId, sheet, result, pausedState = null) {
-    const uid = urlUidRef.current || user?.uid;
+    const uid = getUid();
     if (!uid || !docId) return;
     const data = buildDoc(sheet, result, pausedState, uid);
     try {
       await updateDoc(doc(db, 'practices', docId), data);
-      console.log('[QuizForge] Updated doc:', docId);
+      console.log('[QuizForge] ✅ Updated Firestore — docId:', docId);
     } catch (e) {
-      console.error('[QuizForge] updateAttempt error:', e);
+      console.error('[QuizForge] ❌ Firestore update error:', e.code, e.message);
     }
   }
 
   // ── Load paused attempt ─────────────────────────────────────────────────
   async function loadPausedAttempt(sheetId) {
-    const uid = urlUidRef.current || user?.uid;
+    const uid = getUid();
     if (!uid) return null;
     try {
       const q = query(
@@ -74,14 +87,14 @@ export function useFirebase() {
       const d = snap.docs[0];
       return { docId: d.id, pausedState: d.data().pausedState };
     } catch (e) {
-      console.error('[QuizForge] loadPausedAttempt error:', e);
+      console.error('[QuizForge] loadPausedAttempt error:', e.code, e.message);
       return null;
     }
   }
 
   // ── Get last completed attempt ──────────────────────────────────────────
   async function getLastCompletedAttempt(sheetId) {
-    const uid = urlUidRef.current || user?.uid;
+    const uid = getUid();
     if (!uid) return null;
     try {
       const q = query(
@@ -97,11 +110,13 @@ export function useFirebase() {
     } catch (e) { return null; }
   }
 
+  const effectiveUid = getUid();
+
   return {
     user,
     authLoading,
     effectiveUid,
-    isFromClassTracker: !!urlUid,
+    isFromClassTracker: !!INITIAL_URL_UID,
     signIn,
     signOut,
     saveAttempt,
@@ -111,13 +126,13 @@ export function useFirebase() {
   };
 }
 
-// ── buildDoc: saara data + details array ───────────────────────────────────
+// ── buildDoc ───────────────────────────────────────────────────────────────
 function buildDoc(sheet, result, pausedState, uid) {
   const {
     correct = 0, incorrect = 0, skipped = 0,
     marks = 0, total = 0, timeTaken = 0,
     mode = 'quiz', isReattempt = false, reattemptOf = null,
-    details = [],   // ← question-wise result array
+    details = [],
   } = result;
 
   const touched  = correct + incorrect;
@@ -125,38 +140,37 @@ function buildDoc(sheet, result, pausedState, uid) {
   const status   = pausedState ? 'paused' : 'completed';
   const today    = new Date().toISOString().split('T')[0];
 
-  // details array mein sirf zaruri fields rakho (Firestore size limit)
   const safeDetails = (details || []).map(d => ({
     q:        d.q,
     selected: d.selected ?? null,
     correct:  d.correct,
-    status:   d.status,           // 'correct' | 'incorrect' | 'skipped'
-    time:     d.time ?? null,     // practice mode per-q time
+    status:   d.status,
+    time:     d.time ?? null,
   }));
 
   return {
     uid,
-    sheetId:      sheet.id,
-    sheetName:    sheet.title,
-    chapter:      sheet.chapter || sheet.id,
-    subject:      sheet.subject || 'Other',
-    date:         today,
-    totalQns:     sheet.questions.length,
+    sheetId:     sheet.id,
+    sheetName:   sheet.title,
+    chapter:     sheet.chapter || sheet.id,
+    subject:     sheet.subject || 'Other',
+    date:        today,
+    totalQns:    sheet.questions.length,
     correct,
-    wrong:        incorrect,
+    wrong:       incorrect,
     touched,
     skipped,
     accuracy,
     marks,
-    totalMarks:   total,
+    totalMarks:  total,
     timeTaken,
     mode,
     status,
-    isReattempt:  isReattempt || false,
-    reattemptOf:  reattemptOf || null,
-    pausedState:  pausedState || null,
-    details:      safeDetails,      // ← ab save hoga
-    timestamp:    new Date(),
-    source:       'quizforge',
+    isReattempt: isReattempt || false,
+    reattemptOf: reattemptOf || null,
+    pausedState: pausedState || null,
+    details:     safeDetails,
+    timestamp:   new Date(),
+    source:      'quizforge',
   };
 }
