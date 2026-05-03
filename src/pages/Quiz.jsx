@@ -109,7 +109,7 @@ export default function Quiz({ sheet, firebase, existingDocId, onFinish, onBack 
     });
     const marks = correct * (sheet.marksPerQuestion || 4);
     const total = totalQ * (sheet.marksPerQuestion || 4);
-    return { correct, incorrect, skipped, marks, total, details, timeTaken, totalQ, autoSubmit, mode: 'quiz' };
+    return { correct, incorrect, skipped, marks, total, details, timeTaken, totalQ, autoSubmit, mode: 'quiz', flagged };
   };
 
   const formatTime = (s) => {
